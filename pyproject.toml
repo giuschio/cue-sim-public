@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cuesim"
+version = "0.1.0"
+description = "Gymnasium-compatible billiards simulation environments and utilities."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Proprietary"}
+authors = [{name = "Giulio Schiavi"}]
+keywords = ["billiards", "simulation", "gymnasium", "reinforcement-learning"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Games/Entertainment :: Simulation",
+    "Operating System :: OS Independent",
+    "License :: Other/Proprietary License",
+]
+dependencies = [
+    "gymnasium>=0.29.0",
+    "matplotlib>=3.8.0",
+    "numpy>=1.24.0",
+    "pymunk>=6.6.0",
+    "pygame>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "pytest>=7.0",
+    "gymnasium[classic-control]>=0.29.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/giulioschiavi"
+Repository = "https://github.com/giulioschiavi/cuesim"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cuesim*"]
+namespaces = false
+
