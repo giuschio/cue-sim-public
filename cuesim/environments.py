@@ -93,7 +93,7 @@ __env_options = {
     "Cuesim/OneBall-v0": dict(
         n_target_balls=1,
         n_penalty_balls=0,
-        action_space=Donut(low=1.0, high=1.0),
+        action_space=spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32),
         normalize_actions=True,
         physics=__physics_options["easy"],
         pocket_observations=False,
@@ -104,7 +104,7 @@ __env_options = {
     "Cuesim/ThreeBallEasy-v0": dict(
         n_target_balls=3,
         n_penalty_balls=0,
-        action_space=Donut(low=1.0, high=1.0),
+        action_space=spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32),
         normalize_actions=True,
         physics=__physics_options["easy"],
         pocket_observations=False,
@@ -113,6 +113,17 @@ __env_options = {
         eval_reward="n_pocketed",
     ),
     "Cuesim/ThreeBallHard-v0": dict(
+        n_target_balls=3,
+        n_penalty_balls=0,
+        action_space=spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32),
+        normalize_actions=True,
+        physics=__physics_options["regulation"],
+        pocket_observations=False,
+        max_steps=10,
+        train_reward="n_pocketed",
+        eval_reward="n_pocketed",
+    ),
+    "Cuesim/ThreeBallHard-Cuelearner": dict(
         n_target_balls=3,
         n_penalty_balls=0,
         action_space=Donut(low=1.0, high=1.0),
@@ -257,10 +268,11 @@ class BilliardsEnv(gym.Env):
             else int(self.sim.num_balls * self.ball_observation_dimension)
         )
 
-        hw = options["physics"]["table_width"] / 2.0
-        self.observation_space = spaces.Box(
-            low=-hw, high=hw, shape=(obs_dimension,), dtype=np.float32
-        )
+        # Observation bounds can vary by component (positions, flags, pockets), so we
+        # keep them unbounded to avoid mismatches with the simulator outputs.
+        low = np.full((obs_dimension,), -np.inf, dtype=np.float32)
+        high = np.full((obs_dimension,), np.inf, dtype=np.float32)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # seed the action space
         self.action_space.seed(seed=seed)
@@ -278,8 +290,12 @@ class BilliardsEnv(gym.Env):
         env_info = {
             "state_dim": self.observation_space.shape[0],
             "action_dim": self.action_space.shape[0],
-            "min_action": self.action_space.min_action,
-            "max_action": self.action_space.max_action,
+            "min_action": getattr(
+                self.action_space, "min_action", np.asarray(self.action_space.low)
+            ),
+            "max_action": getattr(
+                self.action_space, "max_action", np.asarray(self.action_space.high)
+            ),
             "action_set": uniform_2d_numpy(interval=0.1),
         }
         return env_info
@@ -329,9 +345,11 @@ class BilliardsEnv(gym.Env):
         state_np[:, 0] += self.__options["physics"]["state_bias_x"]
         state_np[:, 1] += self.__options["physics"]["state_bias_y"]
         if self.__options["pocket_observations"]:
-            return np.concatenate((state_np.flatten(), table_np.flatten()))
+            return np.concatenate(
+                (state_np.flatten(), table_np.flatten())
+            ).astype(np.float32, copy=False)
         else:
-            return state_np.flatten()
+            return state_np.flatten().astype(np.float32, copy=False)
 
     def __detect_foul(self, info):
         return info["state"]["cue_ball"]["pocketed"]
@@ -436,12 +454,16 @@ class BilliardsEnv(gym.Env):
         # action is a 2D vector of x and y velocities
         if type(self.action_space) is spaces.Discrete:
             action = self.__discrete_to_action(action)
+        action = np.asarray(action, dtype=np.float32)
 
         if self.__options["normalize_actions"]:
-            action /= np.linalg.norm(action)
+            norm = np.linalg.norm(action)
+            if norm > 0:
+                action = action / norm
 
         if abs(self.__options["physics"]["velocity_bias"]) > 0:
             action = rotate_vec(action, self.__options["physics"]["velocity_bias"])
+            action = np.asarray(action, dtype=np.float32)
 
         vel = action * 0.5
         # increase the step counter
