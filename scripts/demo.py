@@ -53,6 +53,8 @@ def main(argv: Iterable[str] | None = None) -> None:
         headless=False,
         render_mode="human",
     )
+    print(env_id)
+    print(options)
 
     try:
         agent = cuesim.DirectShotAgent(env.unwrapped.env_options["physics"])
