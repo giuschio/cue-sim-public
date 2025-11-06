@@ -66,9 +66,13 @@ class BilliardsSimulator:
     def __init_screen(self):
         window_scaling = int(self._window_width_px / self.options["table_width"])
         self._window_height_px = int(window_scaling * self.options["table_height"])
-        self.screen = pygame.display.set_mode(
-            (self._window_width_px, self._window_height_px)
-        )
+        desired_size = (self._window_width_px, self._window_height_px)
+        existing_surface = pygame.display.get_surface()
+        if existing_surface is None or existing_surface.get_size() != desired_size:
+            # Only create a new window if the size changed; otherwise reuse the existing one.
+            self.screen = pygame.display.set_mode(desired_size)
+        else:
+            self.screen = existing_surface
         self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
         # make sure we can see outside of the table
         visualization_scaling = 0.75

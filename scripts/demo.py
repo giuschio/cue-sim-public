@@ -17,13 +17,13 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--env",
         choices=sorted(cuesim.DEFAULT_ENV_REGISTRY),
-        default="Cuesim/ThreeBallHard-v0",
+        default="Cuesim/OneBall-v0",
         help="Environment id to run (defaults to Cuesim/ThreeBallHard-v0).",
     )
     parser.add_argument(
         "--episodes",
         type=int,
-        default=3,
+        default=10,
         help="Number of demo episodes to play.",
     )
     parser.add_argument(
@@ -59,12 +59,12 @@ def main(argv: Iterable[str] | None = None) -> None:
     try:
         agent = cuesim.DirectShotAgent(env.unwrapped.env_options["physics"])
         for episode in range(1, args.episodes + 1):
-            episode_seed = None if args.seed is None else args.seed + episode - 1
-            observation, info = env.reset(seed=episode_seed)
+            # episode_seed = None if args.seed is None else args.seed + episode - 1
+            observation, info = env.reset()
             done = False
             cumulative_reward = 0.0
             while not done:
-                action = np.asarray(agent.select_action(observation, None), dtype=np.float32)
+                action = np.asarray(agent.select_action(observation, None, info), dtype=np.float32)
                 observation, reward, terminated, truncated, info = env.step(action)
                 cumulative_reward += reward
                 done = terminated or truncated
