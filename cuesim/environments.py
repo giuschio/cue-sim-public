@@ -97,7 +97,7 @@ __env_options = {
         normalize_actions=True,
         physics=__physics_options["easy"],
         pocket_observations=False,
-        max_steps=1,
+        max_steps=10,
         train_reward="n_pocketed",
         eval_reward="n_pocketed",
     ),

@@ -137,7 +137,9 @@ class HitClosestBallAgent:
     def set_eval(self):
         pass
 
-    def select_action(self, state, action):
+    def select_action(self, state, action, info=None):
+        if info is not None and info["step_count"] == 0:
+            return np.array((1.0, 0.))
         action = None
         info = get_annotated_state(state)
         state = info["state"]
@@ -154,7 +156,6 @@ class HitClosestBallAgent:
         action /= np.linalg.norm(action)
 
         return action
-
 
 class DirectShotAgent:
     def __init__(self, physics) -> None:
@@ -173,7 +174,9 @@ class DirectShotAgent:
             actions = [self.hit_closest_ball.select_action(state, None)]
         return actions
 
-    def select_action(self, state, action):
+    def select_action(self, state, action, info=None):
+        if info is not None and info["step_count"] == 0:
+            return np.array((1.0, 0.))
         action = None
         # compute available actions
         actions = self.get_actions(state)
