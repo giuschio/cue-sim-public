@@ -26,9 +26,9 @@ Simple simulated billiards enviornments that follow the Gymnasium API. The packa
       <td>Three target balls on a full-size table.</td>
     </tr>
     <tr>
-      <td><img src="assets/images/one_easy.png" alt="One Ball"></td>
-      <td><img src="assets/images/three_easy.png" alt="Three Ball Easy"></td>
-      <td><img src="assets/images/three_hard.png" alt="Three Ball Regulation"></td>
+      <td><img src="assets/images/one_easy.png" alt="One Ball" height="100"></td>
+      <td><img src="assets/images/three_easy.png" alt="Three Ball Easy" height="100"></td>
+      <td><img src="assets/images/three_hard.png" alt="Three Ball Regulation" height="100"></td>
     </tr>
   </tbody>
 </table>
