@@ -17,7 +17,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--env",
         choices=sorted(cuesim.DEFAULT_ENV_REGISTRY),
-        default="Cuesim/OneBall-v0",
+        default="Cuesim/ThreeBallHard-v0",
         help="Environment id to run (defaults to Cuesim/ThreeBallHard-v0).",
     )
     parser.add_argument(

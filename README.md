@@ -1,31 +1,51 @@
 # CueSim
+Simple simulated billiards enviornments that follow the Gymnasium API. The package exposes configurable physics, three difficulty settings, and heuristic agents. The environment can be run headless, or rendered in pygame.
 
-CueSim provides fast billiards simulations that follow the Gymnasium API. It exposes configurable physics, environment presets for common training tasks, and helper utilities for inspection or heuristic agents.
 
-## Features
-- Gymnasium-compatible `BilliardsEnv` with vector action space and dense/sparse rewards
-- Preset configurations for one-ball and multi-ball drills (including regulation-table physics)
-- Rendering through Pygame for interactive play plus headless simulation for training
-- Utility helpers for action search, plotting, augmentations, and heuristic shot controllers
+## Environment Details
+
+### Included Environments
+
+<table>
+  <colgroup>
+    <col style="width:33%">
+    <col style="width:33%">
+    <col style="width:33%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col">Cuesim/OneBall-v0</th>
+      <th scope="col">Cuesim/ThreeBallEasy-v0</th>
+      <th scope="col">Cuesim/ThreeBallRegulation-v0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>One target ball on a small table.</td>
+      <td>Three target balls on the same compact table.</td>
+      <td>Three target balls on a full-size table.</td>
+    </tr>
+    <tr>
+      <td><img src="assets/images/one_easy.png" alt="One Ball"></td>
+      <td><img src="assets/images/three_easy.png" alt="Three Ball Easy"></td>
+      <td><img src="assets/images/three_hard.png" alt="Three Ball Regulation"></td>
+    </tr>
+  </tbody>
+</table>
+
+### Observations & Actions
+- **Observation:** `gymnasium.spaces.Box` containing the `(x_i, y_i)` positions for the target ball (first) and then every target ball.
+- **Action:** `gymnasium.spaces.Box` specifying the cue ball velocity; the environment normalizes this vector so only the shot direction matters.
+- **Step Reward:** 1 if a target ball was pocketed, 0 otherwise. If the cue ball (white ball) is pocketed, the reward is zero and the cue ball gets repositioned on the table. Each episode lasts 10 steps, or until all balls have been pocketed.
 
 ## Installation
 
-```bash
-python -m pip install cuesim
-```
-
-To test the packaging workflow before publishing, build and upload to TestPyPI:
+Clone the repository and install locally:
 
 ```bash
-python -m pip install build twine
-python -m build                   # creates dist/ artifacts
-twine upload -r testpypi dist/*   # requires a TestPyPI account/token
-```
-
-Install from TestPyPI as:
-
-```bash
-python -m pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple cuesim
+git clone https://github.com/giuschio/cue-sim-public.git
+cd cue-sim-public
+python -m pip install .
 ```
 
 ## Quick Start
@@ -54,23 +74,6 @@ options = get_env_options("ThreeBallRegulation-v0", {"physics.render_dt": 0.01})
 env = BilliardsEnv(seed=0, options=options, headless=True)
 ```
 
-## Included Environments
-
-| Gym Id                         | Description                              |
-|-------------------------------|------------------------------------------|
-| `Cuesim/OneBall-v0`           | Pocket a single target ball in one shot. |
-| `Cuesim/ThreeBallEasy-v0`     | Three-ball drill on the practice table.  |
-| `Cuesim/ThreeBallRegulation-v0` | Three-ball drill with regulation physics. |
-| `Cuesim/ThreeBallRegulationSparse-v0` | Sparse reward variant of the regulation setup. |
-
-Use `cuesim.DEFAULT_ENV_REGISTRY` to list the bundled Gym ids.
-Pass an optional `prefix` to `cuesim.register_gymnasium_environments` if you also want namespaced ids (e.g. `Cuesim/ThreeBallEasy-v0`).
-
-## Development
-- Format and lint with `ruff`/`black` (see optional dependencies).
-- Run smoke tests: `pytest tests/` (add your own tests around reset/step loops).
-- For local installs, use editable mode: `python -m pip install -e .`.
-
-## License
-
-The license for CueSim matches the root project. Update `pyproject.toml` before releasing to PyPI if you change or formalize the licensing terms.
+### Examples & Scripts
+- `scripts/sb_train.py` and `scripts/sb_test.py`: train and test a simple SAC agent on the easiest environment
+- `scripts/demo.py`: heuristic agent on the hardest environment.
